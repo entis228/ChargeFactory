@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-public class AdminProperties {
+public class OwnerProperties {
 
     @Email(message = "email must be a valid email string")
     @NotNull(message = "email must not be null")

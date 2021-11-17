@@ -13,12 +13,12 @@ import java.util.Map;
 @Getter
 @Setter
 @Validated
-@ConfigurationProperties(prefix = "file-sharing.security")
+@ConfigurationProperties(prefix = "app.security")
 public class SecurityProperties {
 
     @Valid
     @NestedConfigurationProperty
     private JWTProperties jwt;
 
-    private Map<@NotBlank String, @Valid AdminProperties> admins;
+    private Map<@NotBlank String, @Valid OwnerProperties> owners;
 }
