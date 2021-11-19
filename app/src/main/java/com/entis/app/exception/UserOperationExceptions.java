@@ -12,4 +12,16 @@ public class UserOperationExceptions {
     public static ResponseStatusException userWithIdNotFound(String id) {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id " + id + " not found");
     }
+
+    public static ResponseStatusException duplicateEmail(String email) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with email " + email + " already exists");
+    }
+
+    public static ResponseStatusException authorityNotFound(String authorityName) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Authority " + authorityName + " not in database");
+    }
+
+    public static ResponseStatusException incorrectPassword(String msg) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
+    }
 }

@@ -15,11 +15,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmail(String email);
 
-    boolean existsByNickname(String nickname);
-
-    void deleteByEmail(String email);
-
-    @Query("update FileSharingUser u set u.status = :status where u.email = :email")
+    @Query("update User u set u.status = :status where u.email = :email")
     @Modifying
     void changeStatusByEmail(String email, UserStatus status);
 

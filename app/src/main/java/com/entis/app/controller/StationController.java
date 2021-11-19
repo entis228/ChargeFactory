@@ -5,6 +5,7 @@ import com.entis.app.entity.station.request.EditStationRequest;
 import com.entis.app.entity.station.response.StationResponse;
 import com.entis.app.exception.StationOperationException;
 import com.entis.app.service.station.StationActions;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class StationController {
 
     @GetMapping
     @PageableAsQueryParam
-    public Page<StationResponse> getAll(Pageable pageable){
+    public Page<StationResponse> getAll(@Parameter(hidden = true) Pageable pageable){
         return stationActions.getAll(pageable);
     }
 

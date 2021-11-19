@@ -47,7 +47,7 @@ values (0, 'ROLE_USER');
 insert into authorities (id, value)
 values (1, 'ROLE_ADMIN');
 insert into authorities (id, value)
-values (1, 'ROLE_OWNER');
+values (2, 'ROLE_OWNER');
 
 create table refresh_tokens
 (
@@ -64,17 +64,17 @@ create table refresh_tokens
 
 create table station_states
 (
-    id          int  not null primary key,
+    id int  not null primary key,
     description text not null
-)
+);
 
 insert into station_states (id, description)
 values (0, 'WAITING_FOR_PLUG');
-insert into user_statuses (id, description)
+insert into station_states (id, description)
 values (1, 'WAITING_FOR_AUTH');
-insert into user_statuses (id, description)
+insert into station_states (id, description)
 values (2, 'CHARGING');
-insert into user_statuses (id, description)
+insert into station_states (id, description)
 values (3, 'END_OF_CHARGE');
 
 create table stations
@@ -82,7 +82,7 @@ create table stations
     id uuid primary key,
     name text not null,
     state int not null references station_states (id)
-)
+);
 
 create table charges
 (
@@ -92,4 +92,4 @@ create table charges
     station_id uuid not null references stations (id),
     consumed float not null,
     withdraw numeric not null
-)
+);

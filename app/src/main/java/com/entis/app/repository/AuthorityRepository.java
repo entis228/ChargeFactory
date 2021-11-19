@@ -10,7 +10,9 @@ import java.util.stream.Stream;
 
 public interface AuthorityRepository extends JpaRepository<UserAuthority, KnownAuthority> {
 
-    Set<KnownAuthority> ADMIN_AUTHORITIES = EnumSet.of(KnownAuthority.ROLE_USER, KnownAuthority.ROLE_ADMIN, KnownAuthority.ROLE_OWNER);
+    Set<KnownAuthority> ADMIN_AUTHORITIES = EnumSet.of(KnownAuthority.ROLE_USER, KnownAuthority.ROLE_ADMIN);
+
+    Set<KnownAuthority> OWNER_AUTHORITIES = EnumSet.of(KnownAuthority.ROLE_USER, KnownAuthority.ROLE_ADMIN, KnownAuthority.ROLE_OWNER);
 
     Stream<UserAuthority> findAllByIdIn(Set<KnownAuthority> ids);
 }

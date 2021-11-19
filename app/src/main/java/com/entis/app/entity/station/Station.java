@@ -29,6 +29,6 @@ public class Station {
     private StationState state=StationState.WAITING_FOR_PLUG;
 
     @Column(nullable = false)
-    @OneToMany(mappedBy = "station_id", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "station", cascade = CascadeType.ALL)
     private List<Charge>charges=new ArrayList<>();
 }

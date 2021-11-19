@@ -24,15 +24,13 @@ public class Charge {
     @Column(nullable = false)
     private OffsetDateTime endTime;
 
-    @Column(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "station_id")
     @Access(AccessType.PROPERTY)
     private Station station;
 
-    @Column(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @Access(AccessType.PROPERTY)
     private User user;
 

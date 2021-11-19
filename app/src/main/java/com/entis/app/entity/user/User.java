@@ -50,7 +50,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    @OneToMany(mappedBy = "user_id" ,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user" ,cascade = CascadeType.ALL)
     private List<Charge>charges=new ArrayList<>();
 
     @Override
