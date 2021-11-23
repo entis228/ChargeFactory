@@ -81,6 +81,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                .antMatchers("/", "/index.html", "/script.js").permitAll()
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .antMatchers(HttpMethod.POST, Routes.USERS+"/new", Routes.TOKEN + "/refresh").permitAll()
                 .antMatchers(HttpMethod.GET, Routes.USERS + "/{id:\\.+}").hasRole("ADMIN")

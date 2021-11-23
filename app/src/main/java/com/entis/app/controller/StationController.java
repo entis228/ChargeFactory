@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @RestController
 @RequestMapping(Routes.STATIONS)
@@ -32,7 +33,7 @@ public class StationController {
     }
 
     @GetMapping("/{id}")
-    public StationResponse getById(@PathVariable String id){
+    public StationResponse getById(@PathVariable @NotNull @Size(max = 36) String id){
         return stationActions.findById(id).orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
     }
 
@@ -43,14 +44,14 @@ public class StationController {
     }
 
     @PatchMapping("/{id}")
-    public StationResponse editById(@NotNull @PathVariable String id,
+    public StationResponse editById(@NotNull @Size(max = 36) @PathVariable String id,
                                     @RequestBody @Valid EditStationRequest request) {
         return stationActions.editById(id,request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUserById(@NotNull @PathVariable String id) {
+    public void deleteUserById(@NotNull @Size(max = 36) @PathVariable String id) {
         stationActions.deleteById(id);
     }
 }

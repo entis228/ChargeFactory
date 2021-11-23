@@ -125,7 +125,7 @@ public class UserService implements UserActions, UserDetailsService {
     public UserResponse changePasswordByEmail(String email, ChangeUserPasswordRequest request) {
         User dbUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
-        if(!dbUser.getPassword().equals(passwordEncoder.encode(request.oldPassword()))) {
+        if(!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
            throw UserOperationExceptions.incorrectPassword("Old password is not correct");
         }
         dbUser.setPassword(passwordEncoder.encode(request.newPassword()));
@@ -136,7 +136,8 @@ public class UserService implements UserActions, UserDetailsService {
     @Override
     @Transactional
     public UserResponse changePasswordById(String id, String newPassword) {
-        User user = userRepository.getById(UUID.fromString(id));
+        User user = userRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return UserResponse.fromUser(user);

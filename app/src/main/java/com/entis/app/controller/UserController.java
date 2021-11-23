@@ -6,6 +6,7 @@ import com.entis.app.entity.user.request.*;
 import com.entis.app.entity.user.response.UserResponse;
 import com.entis.app.exception.UserOperationExceptions;
 import com.entis.app.service.user.UserActions;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @RestController
 @RequestMapping(Routes.USERS)
@@ -59,43 +61,43 @@ public class UserController {
 
     @GetMapping("/current/charges")
     @PageableAsQueryParam
-    public Page<ChargeResponse> getUserCharges(@AuthenticationPrincipal String email, Pageable pageable) {
+    public Page<ChargeResponse> getUserCharges(@AuthenticationPrincipal String email,@Parameter(hidden = true) Pageable pageable) {
         return userActions.getChargesByEmail(email,pageable);
     }
 
 
     //    ADMIN SECTION
     @GetMapping("/{id}")
-    public UserResponse findUserById(@PathVariable String id){
+    public UserResponse findUserById(@PathVariable @Size(max = 36) String id){
         return userActions.findById(id).orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
     }
 
-    @GetMapping("/{id}/email")
+    @GetMapping("/{email}/email")
     public UserResponse findUserByEmail(@PathVariable @Email String email){
         return userActions.findByEmail(email).orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
     }
 
     @PatchMapping("/{id}/status")
-    public UserResponse changeUserStatusById(@PathVariable String id,
+    public UserResponse changeUserStatusById(@PathVariable @Size(max = 36) String id,
                                              @RequestBody @Valid ChangeUserStatusRequest request) {
         return userActions.changeStatusById(id, request.status());
     }
 
     @PatchMapping("/{id}/password")
-    public UserResponse changeUserPasswordById(@PathVariable String id,
+    public UserResponse changeUserPasswordById(@PathVariable @Size(max = 36) String id,
                                              @RequestBody @Valid SetUserPasswordRequest request) {
         return userActions.changePasswordById(id, request.newPassword());
     }
 
     @GetMapping("/{id}/charges")
     @PageableAsQueryParam
-    public Page<ChargeResponse> getChargesByUserId(@PathVariable String id, Pageable pageable) {
+    public Page<ChargeResponse> getChargesByUserId(@PathVariable @Size(max = 36) String id, Pageable pageable) {
         return userActions.getChargesById(id,pageable);
     }
 
     @GetMapping
     @PageableAsQueryParam
-    public Page<UserResponse> getAllUsers(Pageable pageable) {
+    public Page<UserResponse> getAllUsers(@Parameter(hidden = true) Pageable pageable) {
         return userActions.getAll(pageable);
     }
 
@@ -108,7 +110,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUserById(@NotNull @PathVariable String id) {
+    public void deleteUserById(@NotNull @Size(max = 36) @PathVariable String id) {
         userActions.deleteById(id);
     }
 

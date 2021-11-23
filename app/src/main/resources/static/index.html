@@ -7,11 +7,9 @@
     <title>Charge Factory</title>
 </head>
 <body>
-<select id="sel" onchange="getTable()">
-    <option value="clients">Просмотр списка клиентов</option>
-    <option value="events">Просмотр событий зарядки</option>
-</select>
-<table id="tab" bordercolor="black" border="1" width="100%"></table>
+    <div id="content"></div>
+    
 <script src="script.js"></script>
+<script>checkToken()</script>
 </body>
 </html>
