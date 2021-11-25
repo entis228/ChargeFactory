@@ -9,8 +9,6 @@ import com.entis.app.entity.user.UserStatus;
 import com.entis.app.entity.user.request.*;
 import com.entis.app.entity.user.response.UserResponse;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -109,15 +107,15 @@ class StartApplicationTests {
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .body(request),
                 UserResponse.class);
-        assertEquals(HttpStatus.OK,response.getStatusCode());
-        assertEquals(request.email(),response.getBody().email());
-        assertEquals(request.name(),response.getBody().name());
-        assertEquals(request.phone(),response.getBody().phone());
-        assertEquals(request.surname(),response.getBody().surname());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(request.email(), response.getBody().email());
+        assertEquals(request.name(), response.getBody().name());
+        assertEquals(request.phone(), response.getBody().phone());
+        assertEquals(request.surname(), response.getBody().surname());
     }
 
     @Test
-    void checkTopUp(){
+    void checkTopUp() {
         var request = new TopUpAccountRequest("27.01");
         ResponseEntity<UserResponse> response = rest.exchange(
                 RequestEntity.post(URI.create(Routes.USERS + "/current/add"))
@@ -125,16 +123,16 @@ class StartApplicationTests {
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .body(request),
                 UserResponse.class);
-        assertEquals(HttpStatus.OK,response.getStatusCode());
-        assertEquals(27.01d,response.getBody().balance());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(27.01d, response.getBody().balance());
         request = new TopUpAccountRequest("-27.01");
-        ResponseEntity<String>badResponse = rest.exchange(
+        ResponseEntity<String> badResponse = rest.exchange(
                 RequestEntity.post(URI.create(Routes.USERS + "/current/add"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .body(request),
                 String.class);
-        assertEquals(HttpStatus.BAD_REQUEST,badResponse.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, badResponse.getStatusCode());
         ResponseEntity<UserResponse> responseBalance = rest.exchange(
                 RequestEntity.get(URI.create(Routes.USERS + "/current"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).build(),
@@ -144,8 +142,8 @@ class StartApplicationTests {
     }
 
     @Test
-    void checkChangeCurrentPassword(){
-        var request = new ChangeUserPasswordRequest("123456","654321");
+    void checkChangeCurrentPassword() {
+        var request = new ChangeUserPasswordRequest("123456", "654321");
         ResponseEntity<UserResponse> response = rest.exchange(
                 RequestEntity.patch(URI.create(Routes.USERS + "/current/password"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
@@ -158,7 +156,7 @@ class StartApplicationTests {
         assertEquals(HttpStatus.OK, tokenResponse.getStatusCode());
         this.accessToken = tokenResponse.getBody().accessToken();
         this.refreshToken = tokenResponse.getBody().refreshToken();
-        request=new ChangeUserPasswordRequest("654321","123456");
+        request = new ChangeUserPasswordRequest("654321", "123456");
         rest.exchange(
                 RequestEntity.patch(URI.create(Routes.USERS + "/current/password"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
@@ -168,23 +166,23 @@ class StartApplicationTests {
     }
 
     @Test
-    void checkRegularUserAccessToUpperFunctions(){
+    void checkRegularUserAccessToUpperFunctions() {
         ResponseEntity<String> response = rest.exchange(
-                RequestEntity.get(URI.create(Routes.USERS)+"?page=1&size=20")
+                RequestEntity.get(URI.create(Routes.USERS) + "?page=1&size=20")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        SaveUserRequest saveUserRequest=new SaveUserRequest("lexaasket@gmal.com","123456","Lexa");
-        response=rest.exchange(
+        SaveUserRequest saveUserRequest = new SaveUserRequest("lexaasket@gmal.com", "123456", "Lexa");
+        response = rest.exchange(
                 RequestEntity.post(URI.create(Routes.USERS + "/admins"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .body(saveUserRequest),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        response=rest.exchange(
+        response = rest.exchange(
                 RequestEntity.post(URI.create(Routes.USERS + "/owners"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -192,15 +190,15 @@ class StartApplicationTests {
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         ChangeUserStatusRequest changeUserStatusRequest = new ChangeUserStatusRequest(UserStatus.SUSPENDED);
-        response=rest.exchange(
+        response = rest.exchange(
                 RequestEntity.patch(URI.create(Routes.USERS + "/id=4/status"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .body(changeUserStatusRequest),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        SetUserPasswordRequest setUserPasswordRequest=new SetUserPasswordRequest("adminClown1147");
-        response=rest.exchange(
+        SetUserPasswordRequest setUserPasswordRequest = new SetUserPasswordRequest("adminClown1147");
+        response = rest.exchange(
                 RequestEntity.patch(URI.create(Routes.USERS + "/id=4/password"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -208,56 +206,56 @@ class StartApplicationTests {
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.get(URI.create(Routes.USERS)+"/id=4")
+                RequestEntity.get(URI.create(Routes.USERS) + "/id=4")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.delete(URI.create(Routes.USERS)+"/id=4")
+                RequestEntity.delete(URI.create(Routes.USERS) + "/id=4")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.get(URI.create(Routes.USERS)+"/id=4/charges")
+                RequestEntity.get(URI.create(Routes.USERS) + "/id=4/charges")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.get(URI.create(Routes.USERS)+"/email=da@gmail.com")
+                RequestEntity.get(URI.create(Routes.USERS) + "/email=da@gmail.com")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.get(URI.create(Routes.STATIONS+"?page=1&size=20"))
+                RequestEntity.get(URI.create(Routes.STATIONS + "?page=1&size=20"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.get(URI.create(Routes.STATIONS+"/id=4"))
+                RequestEntity.get(URI.create(Routes.STATIONS + "/id=4"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        response=rest.exchange(
+        response = rest.exchange(
                 RequestEntity.post(URI.create(Routes.STATIONS))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .body("Baza"),
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        EditStationRequest editStationRequest=new EditStationRequest("test", StationState.CHARGING);
-        response=rest.exchange(
+        EditStationRequest editStationRequest = new EditStationRequest("test", StationState.CHARGING);
+        response = rest.exchange(
                 RequestEntity.patch(URI.create(Routes.STATIONS + "/id=4"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -265,7 +263,7 @@ class StartApplicationTests {
                 String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         response = rest.exchange(
-                RequestEntity.delete(URI.create(Routes.STATIONS)+"/id=4")
+                RequestEntity.delete(URI.create(Routes.STATIONS) + "/id=4")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
                         .build(),
