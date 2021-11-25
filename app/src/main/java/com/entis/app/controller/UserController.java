@@ -71,7 +71,7 @@ public class UserController {
         return userActions.findById(id).orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
     }
 
-    @GetMapping("/email={email}/email")
+    @GetMapping("/email={email}")
     public UserResponse findUserByEmail(@PathVariable @Email String email) {
         return userActions.findByEmail(email).orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
     }
