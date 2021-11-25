@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface StationActions {
 
-    Page<StationResponse>getAll(Pageable pageable);
+    Page<StationResponse> getAll(Pageable pageable);
 
     Optional<StationResponse> findById(String id);
 

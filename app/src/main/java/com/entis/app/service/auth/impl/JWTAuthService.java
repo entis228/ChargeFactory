@@ -2,17 +2,17 @@ package com.entis.app.service.auth.impl;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.entis.app.entity.auth.response.AccessTokenResponse;
-import com.entis.app.exception.auth.InvalidRefreshTokenException;
-import com.entis.app.service.auth.AuthOperations;
 import com.entis.app.config.security.SecurityConstants;
 import com.entis.app.config.security.properties.SecurityProperties;
 import com.entis.app.entity.auth.AuthUserDetails;
 import com.entis.app.entity.auth.RefreshToken;
+import com.entis.app.entity.auth.response.AccessTokenResponse;
 import com.entis.app.entity.user.User;
 import com.entis.app.entity.user.UserStatus;
+import com.entis.app.exception.auth.InvalidRefreshTokenException;
 import com.entis.app.repository.RefreshTokenRepository;
 import com.entis.app.repository.UserRepository;
+import com.entis.app.service.auth.AuthOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -94,7 +94,6 @@ public class JWTAuthService implements AuthOperations {
     private void checkTokenOwner(RefreshToken storedToken, String email) throws InvalidRefreshTokenException {
         User user = storedToken.getUser();
         if (!user.getEmail().equals(email)) {
-            // suspend the nasty-ass token pilferer
             String message = "!! ATTENTION !! User {} engaged in a suspicious activity, " +
                     "trying to use a refresh token issued to another user. " +
                     "Blocking the suspicious actor's account pending investigation!";

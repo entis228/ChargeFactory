@@ -26,9 +26,9 @@ public class Station {
 
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private StationState state=StationState.WAITING_FOR_PLUG;
+    private StationState state = StationState.WAITING_FOR_PLUG;
 
     @Column(nullable = false)
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL)
-    private List<Charge>charges=new ArrayList<>();
+    private List<Charge> charges = new ArrayList<>();
 }

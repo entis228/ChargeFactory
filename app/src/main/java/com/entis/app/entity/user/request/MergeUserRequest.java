@@ -8,4 +8,5 @@ public record MergeUserRequest(@Email(message = "incorrect email")
                                @NotBlank(message = "name must not be blank")
                                String name
 ) {
+
 }

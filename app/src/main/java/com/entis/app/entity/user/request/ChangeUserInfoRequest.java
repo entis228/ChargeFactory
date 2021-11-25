@@ -9,4 +9,5 @@ public record ChangeUserInfoRequest(@Email(message = "incorrect email")
                                     String name,
                                     String surname,
                                     String phone) {
+
 }

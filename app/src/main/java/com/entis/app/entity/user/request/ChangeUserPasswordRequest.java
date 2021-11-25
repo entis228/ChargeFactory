@@ -11,4 +11,5 @@ public record ChangeUserPasswordRequest(@NotNull
                                         @Size(min = 5, message = "password's length must be at least 5")
                                         String newPassword
 ) {
+
 }

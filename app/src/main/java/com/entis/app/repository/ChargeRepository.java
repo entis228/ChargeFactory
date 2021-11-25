@@ -11,5 +11,5 @@ public interface ChargeRepository extends JpaRepository<Charge, UUID> {
 
     Page<Charge> findAllByUserId(UUID userId, Pageable pageable);
 
-    Page<Charge>findAllByUserEmail(String email, Pageable pageable);
+    Page<Charge> findAllByUserEmail(String email, Pageable pageable);
 }

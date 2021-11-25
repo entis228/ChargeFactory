@@ -7,4 +7,5 @@ public record OverrideUserPasswordRequest(@NotBlank(message = "password must not
                                           @Size(min = 5, message = "password's length must be at least 5")
                                           String password
 ) {
+
 }

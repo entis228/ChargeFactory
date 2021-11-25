@@ -25,7 +25,7 @@ public record UserResponse(String id,
                 user.getSurname(),
                 user.getStatus(),
                 EnumSet.copyOf(user.getAuthorities().keySet()),
-                user.getPhone(),user.getBalance().doubleValue());
+                user.getPhone(), user.getBalance().doubleValue());
     }
 
     // only the attributes that don't require extra fetching

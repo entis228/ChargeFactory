@@ -1,6 +1,6 @@
 package com.entis.app.exception.auth;
 
-public class InvalidRefreshTokenException extends Exception{
+public class InvalidRefreshTokenException extends Exception {
 
     public InvalidRefreshTokenException() {
         super();

@@ -13,7 +13,7 @@ public final class Routes {
 
     public static final String STATIONS = API_ROOT + "/stations";
 
-    public static final String CHARGES=API_ROOT+"/charges";
+    public static final String CHARGES = API_ROOT + "/charges";
 
     public static final String TOKEN = API_ROOT + "/token";
 

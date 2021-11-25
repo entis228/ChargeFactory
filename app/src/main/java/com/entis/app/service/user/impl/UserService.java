@@ -18,6 +18,8 @@ import com.entis.app.repository.ChargeRepository;
 import com.entis.app.repository.UserRepository;
 import com.entis.app.service.user.UserActions;
 import io.swagger.v3.oas.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,8 @@ public class UserService implements UserActions, UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
     public UserService(UserRepository userRepository, AuthorityRepository authorityRepository, ChargeRepository chargeRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
@@ -65,19 +69,19 @@ public class UserService implements UserActions, UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ChargeResponse> getChargesByEmail(String email,@Parameter(hidden = true) Pageable pageable) {
-        Page<Charge> charges=chargeRepository.findAllByUserEmail(email,pageable);
-        List<ChargeResponse> result=new ArrayList<>();
-        charges.forEach(x->result.add(ChargeResponse.fromCharge(x)));
+    public Page<ChargeResponse> getChargesByEmail(String email, @Parameter(hidden = true) Pageable pageable) {
+        Page<Charge> charges = chargeRepository.findAllByUserEmail(email, pageable);
+        List<ChargeResponse> result = new ArrayList<>();
+        charges.forEach(x -> result.add(ChargeResponse.fromCharge(x)));
         return new PageImpl<>(result);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ChargeResponse> getChargesById(String id,@Parameter(hidden = true) Pageable pageable) {
-        Page<Charge> charges=chargeRepository.findAllByUserId(UUID.fromString(id),pageable);
-        List<ChargeResponse> result=new ArrayList<>();
-        charges.forEach(x->result.add(ChargeResponse.fromCharge(x)));
+    public Page<ChargeResponse> getChargesById(String id, @Parameter(hidden = true) Pageable pageable) {
+        Page<Charge> charges = chargeRepository.findAllByUserId(UUID.fromString(id), pageable);
+        List<ChargeResponse> result = new ArrayList<>();
+        charges.forEach(x -> result.add(ChargeResponse.fromCharge(x)));
         return new PageImpl<>(result);
     }
 
@@ -91,7 +95,9 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse create(SaveUserRequest request) {
         validateUniqueFields(request);
-        return UserResponse.fromUser(save(request, getRegularUserAuthorities()));
+        UserResponse response = UserResponse.fromUser(save(request, getRegularUserAuthorities()));
+        log.info("User with email {} was registered as regular user", request.email());
+        return response;
     }
 
     @Override
@@ -113,10 +119,11 @@ public class UserService implements UserActions, UserDetailsService {
         User dbUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
         /*
-        * NEEDED IMPLEMENTATION OF PAYMENT SERVICE
-        * */
+         * NEEDED IMPLEMENTATION OF PAYMENT SERVICE
+         * */
         dbUser.setBalance(dbUser.getBalance().add(BigDecimal.valueOf(Double.parseDouble(request.addedSum()))));
         userRepository.save(dbUser);
+        log.info("Top up balance of user {} with {}", email, request.addedSum());
         return UserResponse.fromUser(dbUser);
     }
 
@@ -125,11 +132,12 @@ public class UserService implements UserActions, UserDetailsService {
     public UserResponse changePasswordByEmail(String email, ChangeUserPasswordRequest request) {
         User dbUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
-        if(!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
-           throw UserOperationExceptions.incorrectPassword("Old password is not correct");
+        if (!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
+            throw UserOperationExceptions.incorrectPassword("Old password is not correct");
         }
         dbUser.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(dbUser);
+        log.info("Password of user with email {} was changed", email);
         return UserResponse.fromUser(dbUser);
     }
 
@@ -140,6 +148,7 @@ public class UserService implements UserActions, UserDetailsService {
                 .orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        log.info("Password of user with id {} was changed by admin", id);
         return UserResponse.fromUser(user);
     }
 
@@ -147,14 +156,18 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse createAdmin(SaveUserRequest request) {
         validateUniqueFields(request);
-        return UserResponse.fromUser(save(request, getUpperAuthorities(AuthorityRepository.ADMIN_AUTHORITIES)));
+        UserResponse response = UserResponse.fromUser(save(request, getUpperAuthorities(AuthorityRepository.ADMIN_AUTHORITIES)));
+        log.info("User with email {} was registered as admin", request.email());
+        return response;
     }
 
     @Override
     @Transactional
     public UserResponse createOwner(SaveUserRequest request) {
         validateUniqueFields(request);
-        return UserResponse.fromUser(save(request, getUpperAuthorities(AuthorityRepository.OWNER_AUTHORITIES)));
+        UserResponse response = UserResponse.fromUser(save(request, getUpperAuthorities(AuthorityRepository.OWNER_AUTHORITIES)));
+        log.info("User with email {} was registered as owner", request.email());
+        return response;
     }
 
     @Override
@@ -164,14 +177,16 @@ public class UserService implements UserActions, UserDetailsService {
         if (user.getStatus() != status) {
             user.setStatus(status);
         }
+        log.warn("Status of user with id {} was changed to {}", id, status.toString());
         return UserResponse.fromUser(user);
     }
 
     @Override
     @Transactional
     public void deleteById(String id) {
-        UUID dbId=UUID.fromString(id);
+        UUID dbId = UUID.fromString(id);
         if (!userRepository.existsById(dbId)) throw UserOperationExceptions.userWithIdNotFound(id);
+        log.warn("User with id {} was removed", id);
         userRepository.deleteById(dbId);
     }
 
@@ -184,7 +199,7 @@ public class UserService implements UserActions, UserDetailsService {
     }
 
     @Transactional
-    public void mergeAdmins(List<SaveUserRequest> requests){
+    public void mergeAdmins(List<SaveUserRequest> requests) {
         if (requests.isEmpty()) return;
         Map<KnownAuthority, UserAuthority> authorities = getUpperAuthorities(AuthorityRepository.OWNER_AUTHORITIES);
         for (SaveUserRequest request : requests) {

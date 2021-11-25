@@ -23,8 +23,8 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-public class JWTAuthorizationFilter extends BasicAuthenticationFilter{
     private static final Logger log = LoggerFactory.getLogger(JWTAuthorizationFilter.class);
 
     private final Algorithm algorithm;

@@ -61,12 +61,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         setupDefaultOwners();
     }
 
-    private void setupDefaultOwners(){
+    private void setupDefaultOwners() {
         List<SaveUserRequest> requests = securityProperties.getOwners().entrySet().stream()
                 .map(entry -> new SaveUserRequest(
-                entry.getValue().getEmail(),
-                new String(entry.getValue().getPassword()),
-                entry.getKey()))
+                        entry.getValue().getEmail(),
+                        new String(entry.getValue().getPassword()),
+                        entry.getKey()))
                 .peek(admin -> log.info("Default owner found: {} <{}>", admin.name(), admin.email()))
                 .collect(Collectors.toList());
         userService.mergeAdmins(requests);
@@ -83,13 +83,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .antMatchers("/", "/index.html", "/script.js").permitAll()
                 .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .antMatchers(HttpMethod.POST, Routes.USERS+"/new", Routes.TOKEN + "/refresh").permitAll()
-                .antMatchers(HttpMethod.GET, Routes.USERS + "/{id:\\.+}").hasRole("ADMIN")
-                .antMatchers(Routes.USERS + "/{id:\\.+}/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, Routes.USERS, Routes.TOKEN + "/refresh").permitAll()
+                .antMatchers(HttpMethod.GET, Routes.USERS).hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, Routes.USERS + "/id={\\.+}").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, Routes.USERS + "/email={\\.+}").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET,Routes.USERS + "/id={\\.+}/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PATCH,Routes.USERS + "/id={\\.+}/**").hasRole("ADMIN")
                 .antMatchers(Routes.STATIONS).hasRole("ADMIN")
+                .antMatchers(Routes.STATIONS + "/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, Routes.USERS + "/admins").hasRole("OWNER")
                 .antMatchers(HttpMethod.POST, Routes.USERS + "/owners").hasRole("OWNER")
-                .antMatchers(HttpMethod.DELETE, Routes.USERS + "/{id:\\.+}").hasRole("OWNER")
+                .antMatchers(HttpMethod.DELETE, Routes.USERS + "/id={\\.+}").hasRole("OWNER")
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(jwtAuthenticationFilter())
@@ -101,7 +105,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
-
 
     private JWTAuthenticationFilter jwtAuthenticationFilter() throws Exception {
         var filter = new JWTAuthenticationFilter(authenticationManager(), objectMapper);

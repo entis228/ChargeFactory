@@ -16,4 +16,5 @@ public record SaveUserRequest(@Email(message = "incorrect email")
                               @NotBlank(message = "name must not be blank")
                               String name
 ) {
+
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
     private final ObjectMapper objectMapper;
 
     public JWTAuthenticationFilter(

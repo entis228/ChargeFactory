@@ -50,8 +50,8 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    @OneToMany(mappedBy = "user" ,cascade = CascadeType.ALL)
-    private List<Charge>charges=new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Charge> charges = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

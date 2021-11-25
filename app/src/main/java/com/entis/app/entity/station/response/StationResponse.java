@@ -8,7 +8,8 @@ public record StationResponse(
         String name,
         StationState state
 ) {
-    public static StationResponse fromStation(Station station){
+
+    public static StationResponse fromStation(Station station) {
         return new StationResponse(
                 station.getId().toString(),
                 station.getName(),

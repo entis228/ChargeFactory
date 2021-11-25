@@ -29,8 +29,8 @@ public class UserController {
         this.userActions = userActions;
     }
 
-//    USER SECTION
-    @PostMapping("/new")
+    //    USER SECTION
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse register(@RequestBody @Valid SaveUserRequest request) {
         return userActions.create(request);
@@ -43,14 +43,14 @@ public class UserController {
 
     @PatchMapping("/current")
     public UserResponse editCurrentUser(@AuthenticationPrincipal String email,
-                                         @RequestBody @Valid ChangeUserInfoRequest request) {
+                                        @RequestBody @Valid ChangeUserInfoRequest request) {
         return userActions.editByEmail(email, request);
     }
 
     @PostMapping("/current/add")
     public UserResponse addToBalance(@AuthenticationPrincipal String email,
-                                     @RequestBody @Valid TopUpAccountRequest request){
-        return userActions.topUp(email,request);
+                                     @RequestBody @Valid TopUpAccountRequest request) {
+        return userActions.topUp(email, request);
     }
 
     @PatchMapping("/current/password")
@@ -61,38 +61,37 @@ public class UserController {
 
     @GetMapping("/current/charges")
     @PageableAsQueryParam
-    public Page<ChargeResponse> getUserCharges(@AuthenticationPrincipal String email,@Parameter(hidden = true) Pageable pageable) {
-        return userActions.getChargesByEmail(email,pageable);
+    public Page<ChargeResponse> getUserCharges(@AuthenticationPrincipal String email, @Parameter(hidden = true) Pageable pageable) {
+        return userActions.getChargesByEmail(email, pageable);
     }
 
-
     //    ADMIN SECTION
-    @GetMapping("/{id}")
-    public UserResponse findUserById(@PathVariable @Size(max = 36) String id){
+    @GetMapping("/id={id}")
+    public UserResponse findUserById(@PathVariable @Size(max = 36) String id) {
         return userActions.findById(id).orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
     }
 
-    @GetMapping("/{email}/email")
-    public UserResponse findUserByEmail(@PathVariable @Email String email){
+    @GetMapping("/email={email}/email")
+    public UserResponse findUserByEmail(@PathVariable @Email String email) {
         return userActions.findByEmail(email).orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
     }
 
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/id={id}/status")
     public UserResponse changeUserStatusById(@PathVariable @Size(max = 36) String id,
                                              @RequestBody @Valid ChangeUserStatusRequest request) {
         return userActions.changeStatusById(id, request.status());
     }
 
-    @PatchMapping("/{id}/password")
+    @PatchMapping("/id={id}/password")
     public UserResponse changeUserPasswordById(@PathVariable @Size(max = 36) String id,
-                                             @RequestBody @Valid SetUserPasswordRequest request) {
+                                               @RequestBody @Valid SetUserPasswordRequest request) {
         return userActions.changePasswordById(id, request.newPassword());
     }
 
-    @GetMapping("/{id}/charges")
+    @GetMapping("/id={id}/charges")
     @PageableAsQueryParam
     public Page<ChargeResponse> getChargesByUserId(@PathVariable @Size(max = 36) String id, Pageable pageable) {
-        return userActions.getChargesById(id,pageable);
+        return userActions.getChargesById(id, pageable);
     }
 
     @GetMapping
@@ -108,12 +107,11 @@ public class UserController {
         return userActions.createAdmin(request);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/id={id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUserById(@NotNull @Size(max = 36) @PathVariable String id) {
         userActions.deleteById(id);
     }
-
 
     @PostMapping("/owners")
     @ResponseStatus(HttpStatus.CREATED)

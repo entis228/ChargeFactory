@@ -39,23 +39,23 @@ public class UserServiceTests {
 
     @BeforeEach
     void setUp() {
-        passwordEncoder=new BCryptPasswordEncoder(10, new SecureRandom());
+        passwordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
         userRepository = mock(UserRepository.class);
-        authorityRepository=mock(AuthorityRepository.class);
-        chargeRepository=mock(ChargeRepository.class);
-        userService = new UserService(userRepository,authorityRepository,chargeRepository,passwordEncoder);
+        authorityRepository = mock(AuthorityRepository.class);
+        chargeRepository = mock(ChargeRepository.class);
+        userService = new UserService(userRepository, authorityRepository, chargeRepository, passwordEncoder);
     }
 
     @Test
-    void testFindById(){
+    void testFindById() {
         var absentId = UUID.randomUUID();
         var presentId = UUID.randomUUID();
-        User user=createUser(presentId,"email@da","1");
+        User user = createUser(presentId, "email@da", "1");
 
         when(userRepository.findById(absentId)).thenReturn(Optional.empty());
         when(userRepository.findById(presentId)).thenReturn(Optional.of(user));
 
-        Optional<UserResponse> absentResponse=userService.findById(absentId.toString());
+        Optional<UserResponse> absentResponse = userService.findById(absentId.toString());
 
         assertThat(absentResponse).isEmpty();
         verify(userRepository).findById(absentId);
@@ -70,15 +70,15 @@ public class UserServiceTests {
     }
 
     @Test
-    void testFindByEmail(){
-        String absentEmail=UUID.randomUUID()+"@gmail.com";
-        String presentEmail=UUID.randomUUID()+"@gmail.com";
-        User user= createUser(UUID.randomUUID(),presentEmail,"1");
+    void testFindByEmail() {
+        String absentEmail = UUID.randomUUID() + "@gmail.com";
+        String presentEmail = UUID.randomUUID() + "@gmail.com";
+        User user = createUser(UUID.randomUUID(), presentEmail, "1");
 
         when(userRepository.findByEmail(absentEmail)).thenReturn(Optional.empty());
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
 
-        Optional<UserResponse> absentResponse=userService.findByEmail(absentEmail);
+        Optional<UserResponse> absentResponse = userService.findByEmail(absentEmail);
 
         assertThat(absentResponse).isEmpty();
         verify(userRepository).findByEmail(absentEmail);
@@ -93,11 +93,11 @@ public class UserServiceTests {
     }
 
     @Test
-    void testInfoUpdateByEmail(){
-        String absentEmail=UUID.randomUUID()+"@gmail.com";
-        String presentEmail=UUID.randomUUID()+"@gmail.com";
-        ChangeUserInfoRequest request=new ChangeUserInfoRequest(presentEmail,"newName","surname",null);
-        User user= createUser(UUID.randomUUID(),presentEmail,"1");
+    void testInfoUpdateByEmail() {
+        String absentEmail = UUID.randomUUID() + "@gmail.com";
+        String presentEmail = UUID.randomUUID() + "@gmail.com";
+        ChangeUserInfoRequest request = new ChangeUserInfoRequest(presentEmail, "newName", "surname", null);
+        User user = createUser(UUID.randomUUID(), presentEmail, "1");
 
         when(userRepository.findByEmail(absentEmail)).thenReturn(Optional.empty());
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
@@ -123,12 +123,12 @@ public class UserServiceTests {
     }
 
     @Test
-    void testChangePassword(){
-        String absentEmail=UUID.randomUUID()+"@gmail.com";
-        String presentEmail=UUID.randomUUID()+"@gmail.com";
-        String oldPassword="1";
-        ChangeUserPasswordRequest request=new ChangeUserPasswordRequest(oldPassword,"qwerty2004");
-        User user= createUser(UUID.randomUUID(),presentEmail,oldPassword);
+    void testChangePassword() {
+        String absentEmail = UUID.randomUUID() + "@gmail.com";
+        String presentEmail = UUID.randomUUID() + "@gmail.com";
+        String oldPassword = "1";
+        ChangeUserPasswordRequest request = new ChangeUserPasswordRequest(oldPassword, "qwerty2004");
+        User user = createUser(UUID.randomUUID(), presentEmail, oldPassword);
 
         when(userRepository.findByEmail(absentEmail)).thenReturn(Optional.empty());
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
@@ -140,11 +140,11 @@ public class UserServiceTests {
 
         verify(userRepository).findByEmail(absentEmail);
 
-        Assertions.assertTrue(passwordEncoder.matches(request.oldPassword(),user.getPassword()));
+        Assertions.assertTrue(passwordEncoder.matches(request.oldPassword(), user.getPassword()));
 
         userService.changePasswordByEmail(presentEmail, request);
 
-        Assertions.assertTrue(passwordEncoder.matches(request.newPassword(),user.getPassword()));
+        Assertions.assertTrue(passwordEncoder.matches(request.newPassword(), user.getPassword()));
 
         verify(userRepository).findByEmail(presentEmail);
         verify(userRepository).save(same(user));
@@ -153,12 +153,12 @@ public class UserServiceTests {
     }
 
     @Test
-    void testTopUp(){
-        String absentEmail=UUID.randomUUID()+"@gmail.com";
-        String presentEmail=UUID.randomUUID()+"@gmail.com";
-        TopUpAccountRequest floatRequest=new TopUpAccountRequest("17.004");
-        TopUpAccountRequest integerRequest=new TopUpAccountRequest("228");
-        User user= createUser(UUID.randomUUID(),presentEmail,"1");
+    void testTopUp() {
+        String absentEmail = UUID.randomUUID() + "@gmail.com";
+        String presentEmail = UUID.randomUUID() + "@gmail.com";
+        TopUpAccountRequest floatRequest = new TopUpAccountRequest("17.004");
+        TopUpAccountRequest integerRequest = new TopUpAccountRequest("228");
+        User user = createUser(UUID.randomUUID(), presentEmail, "1");
 
         when(userRepository.findByEmail(absentEmail)).thenReturn(Optional.empty());
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
@@ -170,18 +170,16 @@ public class UserServiceTests {
 
         verify(userRepository).findByEmail(absentEmail);
 
-        userService.topUp(presentEmail,floatRequest);
+        userService.topUp(presentEmail, floatRequest);
 
         assertThat(user.getBalance()).isEqualTo(new BigDecimal(floatRequest.addedSum()));
 
-        userService.topUp(presentEmail,integerRequest);
+        userService.topUp(presentEmail, integerRequest);
 
         assertThat(user.getBalance()).isEqualTo(new BigDecimal("245.004"));
     }
 
-
-
-    private static void assertUserMatchesUserResponse(User user, UserResponse response){
+    private static void assertUserMatchesUserResponse(User user, UserResponse response) {
         assertThat(user.getId().toString()).isEqualTo(response.id());
         assertThat(user.getStatus()).isEqualTo(response.status());
         assertThat(user.getEmail()).isEqualTo(response.email());
@@ -192,17 +190,17 @@ public class UserServiceTests {
         assertThat(user.getAuthorities().size()).isEqualTo(response.authorities().size());
     }
 
-    private User createUser(UUID id,String email,String password){
-        User user=new User();
+    private User createUser(UUID id, String email, String password) {
+        User user = new User();
         user.setName("user");
         user.setEmail(email);
         user.setBalance(new BigDecimal(0));
         user.setPassword(passwordEncoder.encode(password));
         user.setStatus(UserStatus.ACTIVE);
         user.setId(id);
-        UserAuthority testAuth=new UserAuthority();
+        UserAuthority testAuth = new UserAuthority();
         testAuth.setId(KnownAuthority.ROLE_USER);
-        user.getAuthorities().put(KnownAuthority.ROLE_USER,testAuth);
+        user.getAuthorities().put(KnownAuthority.ROLE_USER, testAuth);
         return user;
     }
 }
