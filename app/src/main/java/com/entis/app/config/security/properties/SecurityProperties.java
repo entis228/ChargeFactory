@@ -1,14 +1,13 @@
 package com.entis.app.config.security.properties;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.validation.annotation.Validated;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import java.util.Map;
 
 @Getter
 @Setter

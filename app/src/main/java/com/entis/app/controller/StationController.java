@@ -6,15 +6,22 @@ import com.entis.app.entity.station.response.StationResponse;
 import com.entis.app.exception.StationOperationException;
 import com.entis.app.service.station.StationActions;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(Routes.STATIONS)
@@ -34,7 +41,8 @@ public class StationController {
 
     @GetMapping("/{id}")
     public StationResponse getById(@PathVariable @NotNull @Size(max = 36) String id) {
-        return stationActions.findById(id).orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
+        return stationActions.findById(id)
+            .orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
     }
 
     @PostMapping
