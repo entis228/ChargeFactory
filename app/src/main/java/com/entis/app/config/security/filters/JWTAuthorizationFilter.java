@@ -6,23 +6,21 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.entis.app.config.security.SecurityConstants;
 import com.entis.app.config.security.properties.JWTProperties;
 import com.entis.app.entity.user.KnownAuthority;
+import com.entis.app.util.security.SecurityUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
@@ -42,9 +40,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
 
-        var securityContext = SecurityContextHolder.getContext();
-
-        var authentication = securityContext.getAuthentication();
+        Authentication authentication = SecurityUtils.getAuthentication();
         // if authenticated by other means, such as JWTAuthenticationFilter
         if (authentication != null && authentication.isAuthenticated()) {
             chain.doFilter(request, response);
@@ -61,7 +57,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         String encodedJwt = header.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length());
         authentication = getAuthentication(encodedJwt);
 
-        securityContext.setAuthentication(authentication);
+        SecurityUtils.setAuthentication(authentication);
         chain.doFilter(request, response);
     }
 

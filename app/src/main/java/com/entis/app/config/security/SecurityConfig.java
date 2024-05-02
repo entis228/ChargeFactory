@@ -3,21 +3,23 @@ package com.entis.app.config.security;
 import com.entis.app.Routes;
 import com.entis.app.config.security.filters.CredentialsAuthenticationFilter;
 import com.entis.app.config.security.filters.JWTAuthorizationFilter;
-import com.entis.app.config.security.filters.RegularAuthenticationConverter;
+import com.entis.app.config.security.filters.converter.JWTAnonymousAuthenticationConverter;
 import com.entis.app.config.security.properties.SecurityProperties;
+import com.entis.app.entity.user.KnownAuthority;
 import com.entis.app.entity.user.request.SaveUserRequest;
 import com.entis.app.service.user.impl.UserService;
+import com.entis.app.util.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -27,8 +29,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.AuthenticationFilter;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -75,26 +80,14 @@ public class SecurityConfig {
         throws Exception {
         http.authorizeHttpRequests(
                 requests -> requests
-                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, Routes.USERS, Routes.TOKEN, Routes.TOKEN + "/refresh")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, Routes.USERS).hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, Routes.USERS + "/email/*").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, Routes.USERS + "/id/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PATCH, Routes.USERS + "/id/**").hasRole("ADMIN")
-                    .requestMatchers(Routes.STATIONS).hasRole("ADMIN")
-                    .requestMatchers(Routes.STATIONS + "/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.POST, Routes.USERS + "/admins").hasRole("OWNER")
-                    .requestMatchers(HttpMethod.POST, Routes.USERS + "/owners").hasRole("OWNER")
-                    .requestMatchers(HttpMethod.DELETE, Routes.USERS + "/id/*").hasRole("OWNER")
+                    .requestMatchers(getRequestMatchers(null)).permitAll()
+                    .requestMatchers(getRequestMatchers(KnownAuthority.ROLE_ADMIN)).hasRole("ADMIN")
+                    .requestMatchers(getRequestMatchers(KnownAuthority.ROLE_OWNER)).hasRole("OWNER")
                     .anyRequest().authenticated())
             .addFilter(credentialsAuthenticationFilter(authenticationManager))
             .addFilter(jwtAuthorizationFilter(authenticationManager))
-//            .addFilterAfter(authenticationFilter(authenticationManager), JWTAuthorizationFilter.class)
-            .exceptionHandling(configurer -> configurer
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-
+            .addFilterBefore(authenticationFilter(authenticationManager), AuthorizationFilter.class)
+            .authenticationManager(authenticationManager)
             .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(
                 corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
@@ -105,21 +98,58 @@ public class SecurityConfig {
     }
 
     private CredentialsAuthenticationFilter credentialsAuthenticationFilter(
-        AuthenticationManager authenticationManager) throws Exception {
+        AuthenticationManager authenticationManager) {
         var filter = new CredentialsAuthenticationFilter(authenticationManager, objectMapper);
         filter.setFilterProcessesUrl(Routes.TOKEN);
         return filter;
     }
 
-    private AuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager){
-        return new AuthenticationFilter(authenticationManager, new RegularAuthenticationConverter());
+    private AuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager) {
+        AuthenticationFilter filter = new AuthenticationFilter(authenticationManager,
+            new JWTAnonymousAuthenticationConverter());
+        filter.setSuccessHandler((request, response, authentication) -> {
+            //disable
+        });
+        filter.setRequestMatcher(
+            new NegatedRequestMatcher(new OrRequestMatcher(getRequestMatchers(null))));
+        return filter;
     }
 
     private JWTAuthorizationFilter jwtAuthorizationFilter(
-        AuthenticationManager authenticationManager) throws Exception {
+        AuthenticationManager authenticationManager) {
         return new JWTAuthorizationFilter(authenticationManager, securityProperties.getJwt());
     }
 
+    private RequestMatcher[] getRequestMatchers(KnownAuthority knownAuthority) {
+        return switch (knownAuthority) {
+            case ROLE_ADMIN -> {
+                RequestMatcher[] matchers =
+                    SecurityUtils.antMatchersAsArray(HttpMethod.GET, Routes.USERS,
+                        Routes.USERS + "/email/*", Routes.USERS + "/id/**");
+                matchers = ArrayUtils.addAll(matchers,
+                    SecurityUtils.antMatchersAsArray(HttpMethod.PATCH, Routes.USERS + "/id/**"));
+                yield ArrayUtils.addAll(matchers,
+                    SecurityUtils.antMatchersAsArray(null, Routes.STATIONS,
+                        Routes.STATIONS + "/**"));
+            }
+            case ROLE_OWNER -> {
+                RequestMatcher[] matchers =
+                    SecurityUtils.antMatchersAsArray(HttpMethod.POST, Routes.USERS + "/admins",
+                        Routes.USERS + "/owners");
+                yield ArrayUtils.addAll(matchers,
+                    SecurityUtils.antMatchersAsArray(HttpMethod.DELETE, Routes.USERS + "/id/*"));
+            }
+            case null, default -> {
+                RequestMatcher[] matchers =
+                    SecurityUtils.antMatchersAsArray(null, "/v3/api-docs/**", "/swagger-ui/**",
+                        "/swagger-ui.html");
+                yield ArrayUtils.addAll(matchers,
+                    SecurityUtils.antMatchersAsArray(HttpMethod.POST, Routes.USERS, Routes.TOKEN,
+                        Routes.TOKEN + "/refresh"));
+            }
+
+        };
+    }
 
     private CorsConfigurationSource corsConfigurationSource() {
         var source = new UrlBasedCorsConfigurationSource();

@@ -109,7 +109,7 @@ public class UserController {
     @GetMapping("/id/{id}/charges")
     @PageableAsQueryParam
     public Page<ChargeResponse> getChargesByUserId(@PathVariable @Size(max = 36) String id,
-                                                   Pageable pageable) {
+                                                   @Parameter(hidden = true) Pageable pageable) {
         return userActions.getChargesById(id, pageable);
     }
 
