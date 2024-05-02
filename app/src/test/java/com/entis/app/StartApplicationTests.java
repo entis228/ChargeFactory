@@ -9,6 +9,7 @@ import com.entis.app.entity.user.UserStatus;
 import com.entis.app.entity.user.request.*;
 import com.entis.app.entity.user.response.UserResponse;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +22,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.annotation.PostConstruct;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

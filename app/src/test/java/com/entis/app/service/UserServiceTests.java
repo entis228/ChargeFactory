@@ -105,7 +105,7 @@ public class UserServiceTests {
 
         assertThatExceptionOfType(ResponseStatusException.class)
                 .isThrownBy(() -> userService.editByEmail(absentEmail, request))
-                .satisfies(e -> assertThat(e.getStatus()).isSameAs(HttpStatus.NOT_FOUND));
+                .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
 
         verify(userRepository).findByEmail(absentEmail);
 
@@ -136,7 +136,7 @@ public class UserServiceTests {
 
         assertThatExceptionOfType(ResponseStatusException.class)
                 .isThrownBy(() -> userService.changePasswordByEmail(absentEmail, request))
-                .satisfies(e -> assertThat(e.getStatus()).isSameAs(HttpStatus.NOT_FOUND));
+                .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
 
         verify(userRepository).findByEmail(absentEmail);
 
@@ -166,7 +166,7 @@ public class UserServiceTests {
 
         assertThatExceptionOfType(ResponseStatusException.class)
                 .isThrownBy(() -> userService.topUp(absentEmail, floatRequest))
-                .satisfies(e -> assertThat(e.getStatus()).isSameAs(HttpStatus.NOT_FOUND));
+                .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
 
         verify(userRepository).findByEmail(absentEmail);
 

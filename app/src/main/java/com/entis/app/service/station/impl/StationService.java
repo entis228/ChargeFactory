@@ -5,7 +5,6 @@ import com.entis.app.entity.station.StationState;
 import com.entis.app.entity.station.request.EditStationRequest;
 import com.entis.app.entity.station.response.StationResponse;
 import com.entis.app.exception.StationOperationException;
-import com.entis.app.exception.UserOperationExceptions;
 import com.entis.app.repository.StationRepository;
 import com.entis.app.service.station.StationActions;
 import org.slf4j.Logger;

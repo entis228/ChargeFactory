@@ -4,7 +4,9 @@ import com.entis.app.entity.user.User;
 import com.entis.app.entity.user.UserStatus;
 
 import java.util.EnumSet;
+import lombok.Getter;
 
+@Getter
 public class AuthUserDetails extends org.springframework.security.core.userdetails.User {
 
     private final User source;
@@ -21,7 +23,4 @@ public class AuthUserDetails extends org.springframework.security.core.userdetai
         this.source = source;
     }
 
-    public User getSource() {
-        return source;
-    }
 }

@@ -12,7 +12,7 @@ services:
       - "8080:8080"
 
   db:
-    image: postgres:latest
+    image: postgres:15
     container_name: charge-factory_db
     restart: always
     environment:
