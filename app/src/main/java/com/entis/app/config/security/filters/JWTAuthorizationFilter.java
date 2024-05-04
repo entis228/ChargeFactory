@@ -1,20 +1,22 @@
 package com.entis.app.config.security.filters;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.entis.app.config.security.SecurityConstants;
 import com.entis.app.config.security.properties.JWTProperties;
 import com.entis.app.entity.user.KnownAuthority;
 import com.entis.app.util.security.SecurityUtils;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -29,16 +31,14 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final Algorithm algorithm;
 
-    public JWTAuthorizationFilter(AuthenticationManager authenticationManager,
-                                  JWTProperties jwtProperties) {
+    public JWTAuthorizationFilter(AuthenticationManager authenticationManager, JWTProperties jwtProperties) {
         super(authenticationManager);
         algorithm = Algorithm.HMAC512(new String(jwtProperties.getSecret()).getBytes());
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
 
         Authentication authentication = SecurityUtils.getAuthentication();
         // if authenticated by other means, such as JWTAuthenticationFilter
@@ -65,9 +65,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         // parse the token.
         DecodedJWT decodedJWT;
         try {
-            decodedJWT = JWT.require(algorithm)
-                .build()
-                .verify(encodedJwt);
+            decodedJWT = JWT.require(algorithm).build().verify(encodedJwt);
         } catch (Exception e) {
             log.debug("Invalid JWT received", e);
             return null;
@@ -76,7 +74,8 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         String email = decodedJWT.getSubject();
 
         Set<KnownAuthority> authorities = decodedJWT.getClaim(SecurityConstants.AUTHORITIES_CLAIM)
-            .asList(String.class).stream()
+            .asList(String.class)
+            .stream()
             .map(KnownAuthority::valueOf)
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(KnownAuthority.class)));
 

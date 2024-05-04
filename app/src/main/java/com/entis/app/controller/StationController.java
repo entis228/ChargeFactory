@@ -5,6 +5,7 @@ import com.entis.app.entity.station.request.EditStationRequest;
 import com.entis.app.entity.station.response.StationResponse;
 import com.entis.app.exception.StationOperationException;
 import com.entis.app.service.station.StationActions;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -35,31 +36,49 @@ public class StationController {
 
     @GetMapping
     @PageableAsQueryParam
-    public Page<StationResponse> getAll(@Parameter(hidden = true) Pageable pageable) {
+    public Page<StationResponse> getAll(
+        @Parameter(hidden = true)
+        Pageable pageable) {
         return stationActions.getAll(pageable);
     }
 
     @GetMapping("/{id}")
-    public StationResponse getById(@PathVariable @NotNull @Size(max = 36) String id) {
-        return stationActions.findById(id)
-            .orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
+    public StationResponse getById(
+        @PathVariable
+        @NotNull
+        @Size(max = 36)
+        String id) {
+        return stationActions.findById(id).orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public StationResponse create(@NotNull @RequestBody String name) {
+    public StationResponse create(
+        @NotNull
+        @RequestBody
+        String name) {
         return stationActions.create(name);
     }
 
     @PatchMapping("/{id}")
-    public StationResponse editById(@NotNull @Size(max = 36) @PathVariable String id,
-                                    @RequestBody @Valid EditStationRequest request) {
+    public StationResponse editById(
+        @NotNull
+        @Size(max = 36)
+        @PathVariable
+        String id,
+        @RequestBody
+        @Valid
+        EditStationRequest request) {
         return stationActions.editById(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUserById(@NotNull @Size(max = 36) @PathVariable String id) {
+    public void deleteUserById(
+        @NotNull
+        @Size(max = 36)
+        @PathVariable
+        String id) {
         stationActions.deleteById(id);
     }
 }

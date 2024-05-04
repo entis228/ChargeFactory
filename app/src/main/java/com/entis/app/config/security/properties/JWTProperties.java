@@ -1,7 +1,8 @@
 package com.entis.app.config.security.properties;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.time.Duration;
+
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.time.DurationMax;

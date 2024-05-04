@@ -1,7 +1,6 @@
 package com.entis.app.service.user.impl;
 
 import com.entis.app.entity.auth.AuthUserDetails;
-import com.entis.app.entity.charge.Charge;
 import com.entis.app.entity.charge.response.ChargeResponse;
 import com.entis.app.entity.user.KnownAuthority;
 import com.entis.app.entity.user.User;
@@ -17,6 +16,17 @@ import com.entis.app.repository.AuthorityRepository;
 import com.entis.app.repository.ChargeRepository;
 import com.entis.app.repository.UserRepository;
 import com.entis.app.service.user.UserActions;
+
+import java.math.BigDecimal;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +39,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserActions, UserDetailsService {
@@ -48,7 +53,8 @@ public class UserService implements UserActions, UserDetailsService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository, ChargeRepository chargeRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository,
+                       ChargeRepository chargeRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
         this.chargeRepository = chargeRepository;
@@ -69,26 +75,34 @@ public class UserService implements UserActions, UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ChargeResponse> getChargesByEmail(String email, @Parameter(hidden = true) Pageable pageable) {
-        Page<Charge> charges = chargeRepository.findAllByUserEmail(email, pageable);
-        List<ChargeResponse> result = new ArrayList<>();
-        charges.forEach(x -> result.add(ChargeResponse.fromCharge(x)));
+    public Page<ChargeResponse> getChargesByEmail(String email,
+                                                  @Parameter(hidden = true)
+                                                  Pageable pageable) {
+        List<ChargeResponse> result = chargeRepository.findAllByUserEmail(email, pageable)
+            .stream()
+            .map(ChargeResponse::fromCharge)
+            .toList();
         return new PageImpl<>(result);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ChargeResponse> getChargesById(String id, @Parameter(hidden = true) Pageable pageable) {
-        Page<Charge> charges = chargeRepository.findAllByUserId(UUID.fromString(id), pageable);
-        List<ChargeResponse> result = new ArrayList<>();
-        charges.forEach(x -> result.add(ChargeResponse.fromCharge(x)));
+    public Page<ChargeResponse> getChargesById(String id,
+                                               @Parameter(hidden = true)
+                                               Pageable pageable) {
+        List<ChargeResponse> result = chargeRepository.findAllByUserId(UUID.fromString(id), pageable)
+            .stream()
+            .map(ChargeResponse::fromCharge)
+            .toList();
         return new PageImpl<>(result);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponse> getAll(@Parameter(hidden = true) Pageable pageable) {
-        return userRepository.findAll(pageable).map(UserResponse::fromUserWithBasicAttributes);
+    public Page<UserResponse> getAll(
+        @Parameter(hidden = true)
+        Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserResponse::fromUser);
     }
 
     @Override
@@ -104,7 +118,7 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse editByEmail(String email, ChangeUserInfoRequest request) {
         User dbUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
+            .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
         dbUser.setEmail(request.email());
         dbUser.setName(request.name());
         dbUser.setSurname(request.surname());
@@ -117,11 +131,11 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse topUp(String email, TopUpAccountRequest request) {
         User dbUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
+            .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
         /*
          * NEEDED IMPLEMENTATION OF PAYMENT SERVICE
          * */
-        dbUser.setBalance(dbUser.getBalance().add(BigDecimal.valueOf(Double.parseDouble(request.addedSum()))));
+        dbUser.setBalance(dbUser.getBalance().add(new BigDecimal(request.addedSum())));
         userRepository.save(dbUser);
         log.info("Top up balance of user {} with {}", email, request.addedSum());
         return UserResponse.fromUser(dbUser);
@@ -131,7 +145,7 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse changePasswordByEmail(String email, ChangeUserPasswordRequest request) {
         User dbUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
+            .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
         if (!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
             throw UserOperationExceptions.incorrectPassword("Old password is not correct");
         }
@@ -145,7 +159,7 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse changePasswordById(String id, String newPassword) {
         User user = userRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
+            .orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password of user with id {} was changed by admin", id);
@@ -156,7 +170,8 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse createAdmin(SaveUserRequest request) {
         validateUniqueFields(request);
-        UserResponse response = UserResponse.fromUser(save(request, getUpperAuthorities(AuthorityRepository.ADMIN_AUTHORITIES)));
+        UserResponse response = UserResponse.fromUser(
+            save(request, getUpperAuthorities(AuthorityRepository.ADMIN_AUTHORITIES)));
         log.info("User with email {} was registered as admin", request.email());
         return response;
     }
@@ -165,7 +180,8 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional
     public UserResponse createOwner(SaveUserRequest request) {
         validateUniqueFields(request);
-        UserResponse response = UserResponse.fromUser(save(request, getUpperAuthorities(AuthorityRepository.OWNER_AUTHORITIES)));
+        UserResponse response = UserResponse.fromUser(
+            save(request, getUpperAuthorities(AuthorityRepository.OWNER_AUTHORITIES)));
         log.info("User with email {} was registered as owner", request.email());
         return response;
     }
@@ -173,19 +189,33 @@ public class UserService implements UserActions, UserDetailsService {
     @Override
     @Transactional
     public UserResponse changeStatusById(String id, UserStatus status) {
-        User user = userRepository.getById(UUID.fromString(id));
+        User user = userRepository.findById(UUID.fromString(id))
+            .orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
         if (user.getStatus() != status) {
             user.setStatus(status);
+            log.info("Status of the user with id {} was changed to {}", id, status.toString());
         }
-        log.warn("Status of user with id {} was changed to {}", id, status.toString());
         return UserResponse.fromUser(user);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse changeStatusById(String id, String stringStatus) {
+        try {
+            UserStatus status = UserStatus.valueOf(stringStatus);
+            return changeStatusById(id, status);
+        } catch (IllegalArgumentException exception) {
+            throw UserOperationExceptions.statusUnsupported(stringStatus);
+        }
     }
 
     @Override
     @Transactional
     public void deleteById(String id) {
         UUID dbId = UUID.fromString(id);
-        if (!userRepository.existsById(dbId)) throw UserOperationExceptions.userWithIdNotFound(id);
+        if (!userRepository.existsById(dbId)) {
+            throw UserOperationExceptions.userWithIdNotFound(id);
+        }
         log.warn("User with id {} was removed", id);
         userRepository.deleteById(dbId);
     }
@@ -194,14 +224,17 @@ public class UserService implements UserActions, UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
         return new AuthUserDetails(user);
     }
 
     @Transactional
     public void mergeAdmins(List<SaveUserRequest> requests) {
-        if (requests.isEmpty()) return;
-        Map<KnownAuthority, UserAuthority> authorities = getUpperAuthorities(AuthorityRepository.OWNER_AUTHORITIES);
+        if (requests.isEmpty()) {
+            return;
+        }
+        Map<KnownAuthority, UserAuthority> authorities = getUpperAuthorities(
+            AuthorityRepository.OWNER_AUTHORITIES);
         for (SaveUserRequest request : requests) {
             String email = request.email();
             String name = request.name();
@@ -239,17 +272,13 @@ public class UserService implements UserActions, UserDetailsService {
 
     private Map<KnownAuthority, UserAuthority> getUpperAuthorities(Set<KnownAuthority> authoritySet) {
         return authorityRepository.findAllByIdIn(authoritySet)
-                .collect(Collectors.toMap(
-                        UserAuthority::getId,
-                        Function.identity(),
-                        (e1, e2) -> e2,
-                        () -> new EnumMap<>(KnownAuthority.class)));
+            .collect(Collectors.toMap(UserAuthority::getId, Function.identity(), (e1, e2) -> e2,
+                                      () -> new EnumMap<>(KnownAuthority.class)));
     }
 
     private Map<KnownAuthority, UserAuthority> getRegularUserAuthorities() {
-        UserAuthority authority = authorityRepository
-                .findById(KnownAuthority.ROLE_USER)
-                .orElseThrow(() -> UserOperationExceptions.authorityNotFound(KnownAuthority.ROLE_USER.name()));
+        UserAuthority authority = authorityRepository.findById(KnownAuthority.ROLE_USER)
+            .orElseThrow(() -> UserOperationExceptions.authorityNotFound(KnownAuthority.ROLE_USER.name()));
         Map<KnownAuthority, UserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
         authorities.put(KnownAuthority.ROLE_USER, authority);
         return authorities;

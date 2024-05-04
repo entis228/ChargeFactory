@@ -11,6 +11,7 @@ import com.entis.app.entity.user.request.TopUpAccountRequest;
 import com.entis.app.entity.user.response.UserResponse;
 import com.entis.app.exception.UserOperationExceptions;
 import com.entis.app.service.user.UserActions;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -45,96 +46,146 @@ public class UserController {
     //    USER SECTION
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse register(@RequestBody @Valid SaveUserRequest request) {
+    public UserResponse register(
+        @RequestBody
+        @Valid
+        SaveUserRequest request) {
         return userActions.create(request);
     }
 
     @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UserResponse getCurrentUser(@AuthenticationPrincipal String email) {
+    public UserResponse getCurrentUser(
+        @AuthenticationPrincipal
+        String email) {
         return userActions.findByEmail(email)
             .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
     }
 
     @PatchMapping("/current")
-    public UserResponse editCurrentUser(@AuthenticationPrincipal String email,
-                                        @RequestBody @Valid ChangeUserInfoRequest request) {
+    public UserResponse editCurrentUser(
+        @AuthenticationPrincipal
+        String email,
+        @RequestBody
+        @Valid
+        ChangeUserInfoRequest request) {
         return userActions.editByEmail(email, request);
     }
 
     @PostMapping("/current/add")
-    public UserResponse addToBalance(@AuthenticationPrincipal String email,
-                                     @RequestBody @Valid TopUpAccountRequest request) {
+    public UserResponse addToBalance(
+        @AuthenticationPrincipal
+        String email,
+        @RequestBody
+        @Valid
+        TopUpAccountRequest request) {
         return userActions.topUp(email, request);
     }
 
     @PatchMapping("/current/password")
-    public UserResponse changeCurrentUserPassword(@AuthenticationPrincipal String email,
-                                                  @RequestBody @Valid
-                                                  ChangeUserPasswordRequest request) {
+    public UserResponse changeCurrentUserPassword(
+        @AuthenticationPrincipal
+        String email,
+        @RequestBody
+        @Valid
+        ChangeUserPasswordRequest request) {
         return userActions.changePasswordByEmail(email, request);
     }
 
     @GetMapping("/current/charges")
     @PageableAsQueryParam
-    public Page<ChargeResponse> getUserCharges(@AuthenticationPrincipal String email,
-                                               @Parameter(hidden = true) Pageable pageable) {
+    public Page<ChargeResponse> getUserCharges(
+        @AuthenticationPrincipal
+        String email,
+        @Parameter(hidden = true)
+        Pageable pageable) {
         return userActions.getChargesByEmail(email, pageable);
     }
 
     //    ADMIN SECTION
     @GetMapping("/id/{id}")
-    public UserResponse findUserById(@PathVariable @Size(max = 36) String id) {
-        return userActions.findById(id)
-            .orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
+    public UserResponse findUserById(
+        @PathVariable
+        @Size(max = 36)
+        String id) {
+        return userActions.findById(id).orElseThrow(() -> UserOperationExceptions.userWithIdNotFound(id));
     }
 
     @GetMapping("/email/{email}")
-    public UserResponse findUserByEmail(@PathVariable @Email String email) {
+    public UserResponse findUserByEmail(
+        @PathVariable
+        @Email
+        String email) {
         return userActions.findByEmail(email)
             .orElseThrow(() -> UserOperationExceptions.userWithEmailNotFound(email));
     }
 
     @PatchMapping("/id/{id}/status")
-    public UserResponse changeUserStatusById(@PathVariable @Size(max = 36) String id,
-                                             @RequestBody @Valid ChangeUserStatusRequest request) {
+    public UserResponse changeUserStatusById(
+        @PathVariable
+        @Size(max = 36)
+        String id,
+        @RequestBody
+        @Valid
+        ChangeUserStatusRequest request) {
         return userActions.changeStatusById(id, request.status());
     }
 
     @PatchMapping("/id/{id}/password")
-    public UserResponse changeUserPasswordById(@PathVariable @Size(max = 36) String id,
-                                               @RequestBody @Valid SetUserPasswordRequest request) {
+    public UserResponse changeUserPasswordById(
+        @PathVariable
+        @Size(max = 36)
+        String id,
+        @RequestBody
+        @Valid
+        SetUserPasswordRequest request) {
         return userActions.changePasswordById(id, request.newPassword());
     }
 
     @GetMapping("/id/{id}/charges")
     @PageableAsQueryParam
-    public Page<ChargeResponse> getChargesByUserId(@PathVariable @Size(max = 36) String id,
-                                                   @Parameter(hidden = true) Pageable pageable) {
+    public Page<ChargeResponse> getChargesByUserId(
+        @PathVariable
+        @Size(max = 36)
+        String id,
+        @Parameter(hidden = true)
+        Pageable pageable) {
         return userActions.getChargesById(id, pageable);
     }
 
     @GetMapping
     @PageableAsQueryParam
-    public Page<UserResponse> getAllUsers(@Parameter(hidden = true) Pageable pageable) {
+    public Page<UserResponse> getAllUsers(
+        @Parameter(hidden = true)
+        Pageable pageable) {
         return userActions.getAll(pageable);
     }
 
     //    OWNER SECTION
     @PostMapping("/admins")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse registerAdmin(@RequestBody @Valid SaveUserRequest request) {
+    public UserResponse registerAdmin(
+        @RequestBody
+        @Valid
+        SaveUserRequest request) {
         return userActions.createAdmin(request);
     }
 
     @DeleteMapping("/id/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUserById(@NotNull @Size(max = 36) @PathVariable String id) {
+    public void deleteUserById(
+        @NotNull
+        @Size(max = 36)
+        @PathVariable
+        String id) {
         userActions.deleteById(id);
     }
 
     @PostMapping("/owners")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse registerOwner(@RequestBody @Valid SaveUserRequest request) {
+    public UserResponse registerOwner(
+        @RequestBody
+        @Valid
+        SaveUserRequest request) {
         return userActions.createOwner(request);
     }
 }

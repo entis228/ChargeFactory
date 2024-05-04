@@ -7,10 +7,11 @@ import com.entis.app.entity.user.request.ChangeUserPasswordRequest;
 import com.entis.app.entity.user.request.SaveUserRequest;
 import com.entis.app.entity.user.request.TopUpAccountRequest;
 import com.entis.app.entity.user.response.UserResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserActions {
 
@@ -31,6 +32,8 @@ public interface UserActions {
     Optional<UserResponse> findById(String id);
 
     UserResponse changeStatusById(String id, UserStatus status);
+
+    UserResponse changeStatusById(String id, String status);
 
     UserResponse changePasswordById(String id, String newPassword);
 

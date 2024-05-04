@@ -7,17 +7,18 @@ import com.entis.app.entity.station.response.StationResponse;
 import com.entis.app.exception.StationOperationException;
 import com.entis.app.repository.StationRepository;
 import com.entis.app.service.station.StationActions;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class StationService implements StationActions {
@@ -57,7 +58,7 @@ public class StationService implements StationActions {
     @Override
     public StationResponse editById(String id, EditStationRequest request) {
         Station dbStation = stationRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
+            .orElseThrow(() -> StationOperationException.stationWithIdNotFound(id));
         dbStation.setName(request.name());
         dbStation.setState(request.state());
         stationRepository.save(dbStation);

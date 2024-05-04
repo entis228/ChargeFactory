@@ -1,6 +1,14 @@
 package com.entis.app.entity.user;
 
 import com.entis.app.entity.charge.Charge;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,9 +26,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -49,9 +54,8 @@ public class User {
 
     @ManyToMany
     @JoinTable(name = "user_authorities",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id")
-    )
+               joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+               inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
     @MapKeyEnumerated(EnumType.ORDINAL)
     @MapKey(name = "id")
     private Map<KnownAuthority, UserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
@@ -68,9 +72,13 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User)o;
         return email.equals(user.email);
     }
 

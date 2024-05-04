@@ -38,11 +38,11 @@ There are three types of users: Regular, Admin and Owner.
 
 > 1. All regular user requests 
 > 2. GET /api/users (view all registered users)
-> 3. PATCH /api/users/id={id}/status (block or unblock regular users)
-> 4. PATCH /api/users/id={id}/password (set new password to user if it lost)
-> 5. GET /api/users/id={id} (view info about user by id)
-> 6. GET /api/users/email={email} (view info about user by email)
-> 7. GET /api/users/id={id}/charges (view all charge events of user)
+> 3. PATCH /api/users/id/{id}/status (block or unblock regular users)
+> 4. PATCH /api/users/id/{id}/password (set new password to user if it lost)
+> 5. GET /api/users/id/{id} (view info about user by id)
+> 6. GET /api/users/email/{email} (view info about user by email)
+> 7. GET /api/users/id/{id}/charges (view all charge events of user)
 > 8. GET /api/stations (view all available charge stations)
 > 9. GET /api/stations/{id} (view charge station's info)
 > 10. POST /api/stations (register new charge station)
@@ -54,7 +54,7 @@ There are three types of users: Regular, Admin and Owner.
 > 1. All admin requests 
 > 2. POST /api/users/admins (create new admin account)
 > 3. POST /api/users/owners (create new owner account)
-> 4. DELETE /api/users/id={id} (delete account by id)
+> 4. DELETE /api/users/id/{id} (delete account by id)
 
 ### List of requests available for all and unauthorised users:
 

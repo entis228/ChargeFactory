@@ -26,8 +26,7 @@ public class SecurityUtils {
     stolen from org.springframework.security.config.annotation.web.AbstractRequestMatcherRegistry
     because of the package-private access modifier
      */
-    public static RequestMatcher[] antMatchersAsArray(HttpMethod httpMethod,
-                                                      String... antPatterns) {
+    public static RequestMatcher[] antMatchersAsArray(HttpMethod httpMethod, String... antPatterns) {
         String method = (httpMethod != null) ? httpMethod.toString() : null;
         RequestMatcher[] matchers = new RequestMatcher[antPatterns.length];
         for (int index = 0; index < antPatterns.length; index++) {

@@ -9,10 +9,12 @@ import com.entis.app.entity.user.KnownAuthority;
 import com.entis.app.entity.user.request.SaveUserRequest;
 import com.entis.app.service.user.impl.UserService;
 import com.entis.app.util.security.SecurityUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,11 +53,9 @@ public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
 
-    public SecurityConfig(
-        SecurityProperties securityProperties,
-        UserService userService,
-        ObjectMapper objectMapper
-    ) {
+    public SecurityConfig(SecurityProperties securityProperties,
+                          UserService userService,
+                          ObjectMapper objectMapper) {
         this.securityProperties = securityProperties;
         this.userService = userService;
         this.objectMapper = objectMapper;
@@ -75,15 +75,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           AuthenticationManager authenticationManager)
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager)
         throws Exception {
-        http.authorizeHttpRequests(
-                requests -> requests
-                    .requestMatchers(getRequestMatchers(null)).permitAll()
-                    .requestMatchers(getRequestMatchers(KnownAuthority.ROLE_ADMIN)).hasRole("ADMIN")
-                    .requestMatchers(getRequestMatchers(KnownAuthority.ROLE_OWNER)).hasRole("OWNER")
-                    .anyRequest().authenticated())
+        http.authorizeHttpRequests(requests -> requests.requestMatchers(getRequestMatchers(null))
+                .permitAll()
+                .requestMatchers(getRequestMatchers(KnownAuthority.ROLE_ADMIN))
+                .hasRole("ADMIN")
+                .requestMatchers(getRequestMatchers(KnownAuthority.ROLE_OWNER))
+                .hasRole("OWNER")
+                .anyRequest()
+                .authenticated())
             .addFilter(credentialsAuthenticationFilter(authenticationManager))
             .addFilter(jwtAuthorizationFilter(authenticationManager))
             .addFilterBefore(authenticationFilter(authenticationManager), AuthorizationFilter.class)
@@ -97,8 +98,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private CredentialsAuthenticationFilter credentialsAuthenticationFilter(
-        AuthenticationManager authenticationManager) {
+    private CredentialsAuthenticationFilter credentialsAuthenticationFilter(AuthenticationManager authenticationManager) {
         var filter = new CredentialsAuthenticationFilter(authenticationManager, objectMapper);
         filter.setFilterProcessesUrl(Routes.TOKEN);
         return filter;
@@ -106,46 +106,42 @@ public class SecurityConfig {
 
     private AuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager) {
         AuthenticationFilter filter = new AuthenticationFilter(authenticationManager,
-            new JWTAnonymousAuthenticationConverter());
+                                                               new JWTAnonymousAuthenticationConverter());
         filter.setSuccessHandler((request, response, authentication) -> {
             //disable
         });
-        filter.setRequestMatcher(
-            new NegatedRequestMatcher(new OrRequestMatcher(getRequestMatchers(null))));
+        filter.setRequestMatcher(new NegatedRequestMatcher(new OrRequestMatcher(getRequestMatchers(null))));
         return filter;
     }
 
-    private JWTAuthorizationFilter jwtAuthorizationFilter(
-        AuthenticationManager authenticationManager) {
+    private JWTAuthorizationFilter jwtAuthorizationFilter(AuthenticationManager authenticationManager) {
         return new JWTAuthorizationFilter(authenticationManager, securityProperties.getJwt());
     }
 
     private RequestMatcher[] getRequestMatchers(KnownAuthority knownAuthority) {
         return switch (knownAuthority) {
             case ROLE_ADMIN -> {
-                RequestMatcher[] matchers =
-                    SecurityUtils.antMatchersAsArray(HttpMethod.GET, Routes.USERS,
-                        Routes.USERS + "/email/*", Routes.USERS + "/id/**");
-                matchers = ArrayUtils.addAll(matchers,
-                    SecurityUtils.antMatchersAsArray(HttpMethod.PATCH, Routes.USERS + "/id/**"));
-                yield ArrayUtils.addAll(matchers,
-                    SecurityUtils.antMatchersAsArray(null, Routes.STATIONS,
-                        Routes.STATIONS + "/**"));
+                RequestMatcher[] matchers = SecurityUtils.antMatchersAsArray(HttpMethod.GET, Routes.USERS,
+                                                                             Routes.USERS + "/email/*",
+                                                                             Routes.USERS + "/id/**");
+                matchers = ArrayUtils.addAll(matchers, SecurityUtils.antMatchersAsArray(HttpMethod.PATCH,
+                                                                                        Routes.USERS + "/id/**"));
+                yield ArrayUtils.addAll(matchers, SecurityUtils.antMatchersAsArray(null, Routes.STATIONS,
+                                                                                   Routes.STATIONS + "/**"));
             }
             case ROLE_OWNER -> {
-                RequestMatcher[] matchers =
-                    SecurityUtils.antMatchersAsArray(HttpMethod.POST, Routes.USERS + "/admins",
-                        Routes.USERS + "/owners");
-                yield ArrayUtils.addAll(matchers,
-                    SecurityUtils.antMatchersAsArray(HttpMethod.DELETE, Routes.USERS + "/id/*"));
+                RequestMatcher[] matchers = SecurityUtils.antMatchersAsArray(HttpMethod.POST,
+                                                                             Routes.USERS + "/admins",
+                                                                             Routes.USERS + "/owners");
+                yield ArrayUtils.addAll(matchers, SecurityUtils.antMatchersAsArray(HttpMethod.DELETE,
+                                                                                   Routes.USERS + "/id/*"));
             }
             case null, default -> {
-                RequestMatcher[] matchers =
-                    SecurityUtils.antMatchersAsArray(null, "/v3/api-docs/**", "/swagger-ui/**",
-                        "/swagger-ui.html");
-                yield ArrayUtils.addAll(matchers,
-                    SecurityUtils.antMatchersAsArray(HttpMethod.POST, Routes.USERS, Routes.TOKEN,
-                        Routes.TOKEN + "/refresh"));
+                RequestMatcher[] matchers = SecurityUtils.antMatchersAsArray(null, "/v3/api-docs/**",
+                                                                             "/swagger-ui/**", "/swagger-ui.html");
+                yield ArrayUtils.addAll(matchers, SecurityUtils.antMatchersAsArray(HttpMethod.POST, Routes.USERS,
+                                                                                   Routes.TOKEN,
+                                                                                   Routes.TOKEN + "/refresh"));
             }
 
         };
@@ -158,11 +154,11 @@ public class SecurityConfig {
     }
 
     private void setupDefaultOwners() {
-        List<SaveUserRequest> requests = securityProperties.getOwners().entrySet().stream()
-            .map(entry -> new SaveUserRequest(
-                entry.getValue().getEmail(),
-                new String(entry.getValue().getPassword()),
-                entry.getKey()))
+        List<SaveUserRequest> requests = securityProperties.getOwners()
+            .entrySet()
+            .stream()
+            .map(entry -> new SaveUserRequest(entry.getValue().getEmail(),
+                                              new String(entry.getValue().getPassword()), entry.getKey()))
             .peek(admin -> log.info("Default owner found: {} <{}>", admin.name(), admin.email()))
             .collect(Collectors.toList());
         userService.mergeAdmins(requests);

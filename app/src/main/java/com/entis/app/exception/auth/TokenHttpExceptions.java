@@ -7,7 +7,9 @@ public class TokenHttpExceptions {
 
     public static ResponseStatusException invalidRefreshToken(InvalidRefreshTokenException cause) {
         return new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                "Refresh token is invalid! It may have been rotated, invalidated or expired naturally", cause);
+                                           "Refresh token is invalid! It may have been rotated, invalidated or " +
+                                           "expired naturally",
+                                           cause);
     }
 
 }

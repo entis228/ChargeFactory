@@ -1,5 +1,13 @@
 package com.entis.app.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.entis.app.entity.user.KnownAuthority;
 import com.entis.app.entity.user.User;
 import com.entis.app.entity.user.UserAuthority;
@@ -12,6 +20,12 @@ import com.entis.app.repository.AuthorityRepository;
 import com.entis.app.repository.ChargeRepository;
 import com.entis.app.repository.UserRepository;
 import com.entis.app.service.user.impl.UserService;
+
+import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,29 +34,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
-import java.security.SecureRandom;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.*;
-
 public class UserServiceTests {
 
     private UserService userService;
     private UserRepository userRepository;
-    private AuthorityRepository authorityRepository;
-    private ChargeRepository chargeRepository;
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
         passwordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
         userRepository = mock(UserRepository.class);
-        authorityRepository = mock(AuthorityRepository.class);
-        chargeRepository = mock(ChargeRepository.class);
+        AuthorityRepository authorityRepository = mock(AuthorityRepository.class);
+        ChargeRepository chargeRepository = mock(ChargeRepository.class);
         userService = new UserService(userRepository, authorityRepository, chargeRepository, passwordEncoder);
     }
 
@@ -62,8 +65,8 @@ public class UserServiceTests {
 
         Optional<UserResponse> presentResponse = userService.findById(presentId.toString());
 
-        assertThat(presentResponse).hasValueSatisfying(userResponse ->
-                assertUserMatchesUserResponse(user, userResponse));
+        assertThat(presentResponse).hasValueSatisfying(
+            userResponse -> assertUserMatchesUserResponse(user, userResponse));
         verify(userRepository).findById(presentId);
 
         verifyNoMoreInteractions(userRepository);
@@ -85,8 +88,8 @@ public class UserServiceTests {
 
         Optional<UserResponse> presentResponse = userService.findByEmail(presentEmail);
 
-        assertThat(presentResponse).hasValueSatisfying(userResponse ->
-                assertUserMatchesUserResponse(user, userResponse));
+        assertThat(presentResponse).hasValueSatisfying(
+            userResponse -> assertUserMatchesUserResponse(user, userResponse));
         verify(userRepository).findByEmail(presentEmail);
 
         verifyNoMoreInteractions(userRepository);
@@ -103,9 +106,9 @@ public class UserServiceTests {
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
         when(userRepository.save(same(user))).thenReturn(user);
 
-        assertThatExceptionOfType(ResponseStatusException.class)
-                .isThrownBy(() -> userService.editByEmail(absentEmail, request))
-                .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
+        assertThatExceptionOfType(ResponseStatusException.class).isThrownBy(
+                () -> userService.editByEmail(absentEmail, request))
+            .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
 
         verify(userRepository).findByEmail(absentEmail);
 
@@ -134,9 +137,9 @@ public class UserServiceTests {
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
         when(userRepository.save(same(user))).thenReturn(user);
 
-        assertThatExceptionOfType(ResponseStatusException.class)
-                .isThrownBy(() -> userService.changePasswordByEmail(absentEmail, request))
-                .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
+        assertThatExceptionOfType(ResponseStatusException.class).isThrownBy(
+                () -> userService.changePasswordByEmail(absentEmail, request))
+            .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
 
         verify(userRepository).findByEmail(absentEmail);
 
@@ -164,9 +167,9 @@ public class UserServiceTests {
         when(userRepository.findByEmail(presentEmail)).thenReturn(Optional.of(user));
         when(userRepository.save(same(user))).thenReturn(user);
 
-        assertThatExceptionOfType(ResponseStatusException.class)
-                .isThrownBy(() -> userService.topUp(absentEmail, floatRequest))
-                .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
+        assertThatExceptionOfType(ResponseStatusException.class).isThrownBy(
+                () -> userService.topUp(absentEmail, floatRequest))
+            .satisfies(e -> assertThat(e.getStatusCode()).isSameAs(HttpStatus.NOT_FOUND));
 
         verify(userRepository).findByEmail(absentEmail);
 

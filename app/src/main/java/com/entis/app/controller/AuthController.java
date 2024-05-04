@@ -8,6 +8,7 @@ import com.entis.app.entity.auth.response.AccessTokenResponse;
 import com.entis.app.exception.auth.InvalidRefreshTokenException;
 import com.entis.app.exception.auth.TokenHttpExceptions;
 import com.entis.app.service.auth.AuthOperations;
+
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 @RequestMapping(Routes.TOKEN)
@@ -35,18 +35,21 @@ public class AuthController {
      * JWTAuthenticationFilter sets the principle (user-details from UserService) using auth manager
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = @Content(schema = @Schema(implementation = SignInRequest.class)))
-    public AccessTokenResponse login(@AuthenticationPrincipal AuthUserDetails userDetails) {
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(schema = @Schema(implementation =
+        SignInRequest.class)))
+    public AccessTokenResponse login(
+        @AuthenticationPrincipal
+        AuthUserDetails userDetails) {
         return authOperations.getToken(userDetails);
     }
 
-    @PostMapping(
-        value = "/refresh",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public AccessTokenResponse refresh(@RequestBody @Valid RefreshTokenRequest request) {
+    @PostMapping(value = "/refresh",
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
+    public AccessTokenResponse refresh(
+        @RequestBody
+        @Valid
+        RefreshTokenRequest request) {
         try {
             return authOperations.refreshToken(request.refreshToken());
         } catch (InvalidRefreshTokenException e) {
@@ -56,8 +59,12 @@ public class AuthController {
 
     @PostMapping(value = "/invalidate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void invalidate(@RequestBody @Valid RefreshTokenRequest request,
-                           @AuthenticationPrincipal String email) {
+    public void invalidate(
+        @RequestBody
+        @Valid
+        RefreshTokenRequest request,
+        @AuthenticationPrincipal
+        String email) {
         try {
             authOperations.invalidateToken(request.refreshToken(), email);
         } catch (InvalidRefreshTokenException e) {

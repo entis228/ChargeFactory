@@ -2,6 +2,10 @@ package com.entis.app.entity.charge;
 
 import com.entis.app.entity.station.Station;
 import com.entis.app.entity.user.User;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -12,8 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

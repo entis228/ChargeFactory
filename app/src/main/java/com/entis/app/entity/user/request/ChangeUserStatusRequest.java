@@ -1,8 +1,10 @@
 package com.entis.app.entity.user.request;
 
-import com.entis.app.entity.user.UserStatus;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record ChangeUserStatusRequest(@NotNull UserStatus status) {
+public record ChangeUserStatusRequest(
+    @NotNull @NotBlank(message = "user status must be not blank") String status
+) {
 
 }

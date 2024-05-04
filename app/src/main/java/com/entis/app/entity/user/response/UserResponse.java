@@ -27,18 +27,5 @@ public record UserResponse(String id,
                 EnumSet.copyOf(user.getAuthorities().keySet()),
                 user.getPhone(), user.getBalance().doubleValue());
     }
-
-    // only the attributes that don't require extra fetching
-    public static UserResponse fromUserWithBasicAttributes(User user) {
-        return new UserResponse(
-                user.getId().toString(),
-                user.getEmail(),
-                user.getName(),
-                null,
-                user.getStatus(),
-                null,
-                null,
-                user.getBalance().doubleValue());
-    }
 }
 
